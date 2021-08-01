@@ -1,5 +1,4 @@
-import { * as postcss } from "../../lib/deps.js"
-
+import { postcss } from "../../lib/deps.ts";
 
 export type PostCSSRoot = postcss.Root;
 export interface AtRules {

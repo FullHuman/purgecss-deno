@@ -1,15 +1,22 @@
-import { fs, glob, path, postcss, promisify, selectorParser } from "./lib/deps.js"
+import {
+  fs,
+  glob,
+  path,
+  postcss,
+  promisify,
+  selectorParser,
+} from "./lib/deps.ts";
 import {
   CONFIG_FILENAME,
   ERROR_CONFIG_FILE_LOADING,
   IGNORE_ANNOTATION_CURRENT,
   IGNORE_ANNOTATION_END,
   IGNORE_ANNOTATION_NEXT,
-  IGNORE_ANNOTATION_START
-} from "./src/constants"
-import ExtractorResultSets from "./src/ExtractorResultSets"
-import { CSS_SAFELIST } from "./src/internal-safelist"
-import { defaultOptions } from "./src/options"
+  IGNORE_ANNOTATION_START,
+} from "./src/constants.ts";
+import ExtractorResultSets from "./src/ExtractorResultSets.ts";
+import { CSS_SAFELIST } from "./src/internal-safelist.ts";
+import { defaultOptions } from "./src/options.ts";
 import {
   AtRules,
   ComplexSafelist,
@@ -23,15 +30,13 @@ import {
   RawCSS,
   ResultPurge,
   UserDefinedOptions,
-  UserDefinedSafelist
-} from "./src/types"
-import { matchAll } from "./src/utils"
-import VariablesStructure from "./src/VariablesStructure"
+  UserDefinedSafelist,
+} from "./src/types/index.ts";
+import { matchAll } from "./src/utils.ts";
+import VariablesStructure from "./src/VariablesStructure.ts";
 
-
-export { defaultOptions } from "./src/options"
-export { PurgeCSS }
-
+export { defaultOptions } from "./src/options.ts";
+export { PurgeCSS };
 
 const asyncFs = {
   access: promisify(fs.access),
@@ -39,7 +44,7 @@ const asyncFs = {
 };
 
 export function standardizeSafelist(
-  userDefinedSafelist: UserDefinedSafelist = []
+  userDefinedSafelist: UserDefinedSafelist = [],
 ): Required<ComplexSafelist> {
   if (Array.isArray(userDefinedSafelist)) {
     return {
@@ -58,7 +63,7 @@ export function standardizeSafelist(
  * @param configFile Path of the config file
  */
 export async function setOptions(
-  configFile: string = CONFIG_FILENAME
+  configFile: string = CONFIG_FILENAME,
 ): Promise<Options> {
   let options: Options;
   try {
@@ -81,7 +86,7 @@ export async function setOptions(
  */
 async function extractSelectors(
   content: string,
-  extractor: ExtractorFunction
+  extractor: ExtractorFunction,
 ): Promise<ExtractorResultSets> {
   return new ExtractorResultSets(await extractor(content));
 }
@@ -166,7 +171,7 @@ function stripQuotes(str: string): string {
  */
 function isAttributeFound(
   attributeNode: selectorParser.Attribute,
-  selectors: ExtractorResultSets
+  selectors: ExtractorResultSets,
 ): boolean {
   if (!selectors.hasAttrName(attributeNode.attribute)) {
     return false;
@@ -199,7 +204,7 @@ function isAttributeFound(
  */
 function isClassFound(
   classNode: selectorParser.ClassName,
-  selectors: ExtractorResultSets
+  selectors: ExtractorResultSets,
 ): boolean {
   return selectors.hasClass(classNode.value);
 }
@@ -211,7 +216,7 @@ function isClassFound(
  */
 function isIdentifierFound(
   identifierNode: selectorParser.Identifier,
-  selectors: ExtractorResultSets
+  selectors: ExtractorResultSets,
 ): boolean {
   return selectors.hasId(identifierNode.value);
 }
@@ -223,7 +228,7 @@ function isIdentifierFound(
  */
 function isTagFound(
   tagNode: selectorParser.Tag,
-  selectors: ExtractorResultSets
+  selectors: ExtractorResultSets,
 ): boolean {
   return selectors.hasTag(tagNode.value);
 }
@@ -275,7 +280,7 @@ class PurgeCSS {
     if (this.options.variables) {
       const usedVariablesMatchesInDeclaration = matchAll(
         value,
-        /var\((.+?)[,)]/g
+        /var\((.+?)[,)]/g,
       );
       if (prop.startsWith("--")) {
         this.variablesStructure.addVariable(declaration);
@@ -283,13 +288,13 @@ class PurgeCSS {
         if (usedVariablesMatchesInDeclaration.length > 0) {
           this.variablesStructure.addVariableUsage(
             declaration,
-            usedVariablesMatchesInDeclaration
+            usedVariablesMatchesInDeclaration,
           );
         }
       } else {
         if (usedVariablesMatchesInDeclaration.length > 0) {
           this.variablesStructure.addVariableUsageInProperties(
-            usedVariablesMatchesInDeclaration
+            usedVariablesMatchesInDeclaration,
           );
         }
       }
@@ -324,7 +329,7 @@ class PurgeCSS {
    */
   private getFileExtractor(
     filename: string,
-    extractors: Extractors[]
+    extractors: Extractors[],
   ): ExtractorFunction {
     const extractorObj = extractors.find((extractor) =>
       extractor.extensions.find((ext) => filename.endsWith(ext))
@@ -342,7 +347,7 @@ class PurgeCSS {
    */
   public async extractSelectorsFromFiles(
     files: string[],
-    extractors: Extractors[]
+    extractors: Extractors[],
   ): Promise<ExtractorResultSets> {
     const selectors = new ExtractorResultSets([]);
     for (const globfile of files) {
@@ -374,7 +379,7 @@ class PurgeCSS {
    */
   public async extractSelectorsFromString(
     content: RawContent[],
-    extractors: Extractors[]
+    extractors: Extractors[],
   ): Promise<ExtractorResultSets> {
     const selectors = new ExtractorResultSets([]);
     for (const { raw, extension } of content) {
@@ -415,7 +420,7 @@ class PurgeCSS {
    */
   private evaluateRule(
     node: postcss.Node,
-    selectors: ExtractorResultSets
+    selectors: ExtractorResultSets,
   ): void {
     // exit if is in ignoring state activated by an ignore comment
     if (this.ignore) {
@@ -461,8 +466,9 @@ class PurgeCSS {
         keepSelector = this.shouldKeepSelector(selector, selectors);
 
         if (!keepSelector) {
-          if (this.options.rejected)
+          if (this.options.rejected) {
             this.selectorsRemoved.add(selector.toString());
+          }
           selector.remove();
         }
       });
@@ -489,7 +495,7 @@ class PurgeCSS {
    */
   public async getPurgedCSS(
     cssOptions: Array<string | RawCSS>,
-    selectors: ExtractorResultSets
+    selectors: ExtractorResultSets,
   ): Promise<ResultPurge[]> {
     const sources = [];
 
@@ -501,7 +507,7 @@ class PurgeCSS {
           ...glob.sync(option, {
             nodir: true,
             ignore: this.options.skippedContentGlobs,
-          })
+          }),
         );
       } else {
         processedOptions.push(option);
@@ -509,12 +515,9 @@ class PurgeCSS {
     }
 
     for (const option of processedOptions) {
-      const cssContent =
-        typeof option === "string"
-          ? this.options.stdin
-            ? option
-            : await asyncFs.readFile(option, "utf-8")
-          : option.raw;
+      const cssContent = typeof option === "string"
+        ? this.options.stdin ? option : await asyncFs.readFile(option, "utf-8")
+        : option.raw;
       const root = postcss.parse(cssContent);
 
       // purge unused selectors
@@ -601,16 +604,15 @@ class PurgeCSS {
    * @param userOptions PurgeCSS options
    */
   public async purge(
-    userOptions: UserDefinedOptions | string | undefined
+    userOptions: UserDefinedOptions | string | undefined,
   ): Promise<ResultPurge[]> {
-    this.options =
-      typeof userOptions !== "object"
-        ? await setOptions(userOptions)
-        : {
-            ...defaultOptions,
-            ...userOptions,
-            safelist: standardizeSafelist(userOptions.safelist),
-          };
+    this.options = typeof userOptions !== "object"
+      ? await setOptions(userOptions)
+      : {
+        ...defaultOptions,
+        ...userOptions,
+        safelist: standardizeSafelist(userOptions.safelist),
+      };
     const { content, css, extractors, safelist } = this.options;
 
     if (this.options.variables) {
@@ -618,24 +620,24 @@ class PurgeCSS {
     }
 
     const fileFormatContents = content.filter(
-      (o) => typeof o === "string"
+      (o) => typeof o === "string",
     ) as string[];
     const rawFormatContents = content.filter(
-      (o) => typeof o === "object"
+      (o) => typeof o === "object",
     ) as RawContent[];
 
     const cssFileSelectors = await this.extractSelectorsFromFiles(
       fileFormatContents,
-      extractors
+      extractors,
     );
     const cssRawSelectors = await this.extractSelectorsFromString(
       rawFormatContents,
-      extractors
+      extractors,
     );
 
     return this.getPurgedCSS(
       css,
-      mergeExtractorSelectors(cssFileSelectors, cssRawSelectors)
+      mergeExtractorSelectors(cssFileSelectors, cssRawSelectors),
     );
   }
 
@@ -687,7 +689,7 @@ class PurgeCSS {
    */
   private shouldKeepSelector(
     selector: selectorParser.Selector,
-    selectorsFromExtractor: ExtractorResultSets
+    selectorsFromExtractor: ExtractorResultSets,
   ): boolean {
     // ignore the selector if it is inside a pseudo class
     if (isInPseudoClass(selector)) return true;
@@ -699,7 +701,7 @@ class PurgeCSS {
       if (
         selectorParts.some(
           (selectorPart) =>
-            selectorPart && this.isSelectorSafelistedGreedy(selectorPart)
+            selectorPart && this.isSelectorSafelistedGreedy(selectorPart),
         )
       ) {
         return true;
@@ -738,12 +740,12 @@ class PurgeCSS {
           // the choice is to always leave `value` as it can change based on the user
           // idem for `checked`, `selected`, `open`
           isPresent = [
-            ...this.options.dynamicAttributes,
-            "value",
-            "checked",
-            "selected",
-            "open",
-          ].includes(selectorNode.attribute)
+              ...this.options.dynamicAttributes,
+              "value",
+              "checked",
+              "selected",
+              "open",
+            ].includes(selectorNode.attribute)
             ? true
             : isAttributeFound(selectorNode, selectorsFromExtractor);
           break;
@@ -777,7 +779,7 @@ class PurgeCSS {
    */
   public walkThroughCSS(
     root: PostCSSRoot,
-    selectors: ExtractorResultSets
+    selectors: ExtractorResultSets,
   ): void {
     root.walk((node) => {
       if (node.type === "rule") {

@@ -1,7 +1,6 @@
-import { * as postcss } from "../lib/deps.js"
-import { StringRegExpArray } from "./types/index.ts"
-import { matchAll } from "./utils.ts"
-
+import { postcss } from "../lib/deps.ts";
+import { StringRegExpArray } from "./types/index.ts";
+import { matchAll } from "./utils.ts";
 
 class VariableNode {
   public nodes: VariableNode[] = [];
@@ -28,7 +27,7 @@ class VariablesStructure {
 
   addVariableUsage(
     declaration: postcss.Declaration,
-    matchedVariables: RegExpMatchArray[]
+    matchedVariables: RegExpMatchArray[],
   ): void {
     const { prop } = declaration;
     const node = this.nodes.get(prop);
@@ -70,7 +69,7 @@ class VariablesStructure {
       if (usedNode) {
         const usedVariablesMatchesInDeclaration = matchAll(
           usedNode.value.value,
-          /var\((.+?)[,)]/g
+          /var\((.+?)[,)]/g,
         );
         usedVariablesMatchesInDeclaration.forEach((usage) => {
           if (!this.usedVariables.has(usage[1])) {
