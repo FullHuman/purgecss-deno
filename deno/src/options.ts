@@ -1,4 +1,4 @@
-import { ExtractorResult, Options } from "./types/";
+import { ExtractorResult, Options } from "./types/index.ts";
 
 export const defaultOptions: Options = {
   css: [],
