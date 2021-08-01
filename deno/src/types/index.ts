@@ -1,13 +1,13 @@
 import { postcss } from "../../lib/deps.ts";
 
-export type PostCSSRoot = postcss.Root;
+export type PostCSSRoot = any;
 export interface AtRules {
   fontFace: Array<{
     name: string;
-    node: postcss.AtRule;
+    node: any;
   }>;
 
-  keyframes: postcss.AtRule[];
+  keyframes: any;
 }
 
 export interface RawContent<T = string> {

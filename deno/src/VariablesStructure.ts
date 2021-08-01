@@ -4,10 +4,10 @@ import { matchAll } from "./utils.ts";
 
 class VariableNode {
   public nodes: VariableNode[] = [];
-  public value: postcss.Declaration;
+  public value: any;
   public isUsed = false;
 
-  constructor(declaration: postcss.Declaration) {
+  constructor(declaration: any) {
     this.value = declaration;
   }
 }
@@ -17,7 +17,7 @@ class VariablesStructure {
   public usedVariables: Set<string> = new Set();
   public safelist: StringRegExpArray = [];
 
-  addVariable(declaration: postcss.Declaration): void {
+  addVariable(declaration: any): void {
     const { prop } = declaration;
     if (!this.nodes.has(prop)) {
       const node = new VariableNode(declaration);
@@ -26,7 +26,7 @@ class VariablesStructure {
   }
 
   addVariableUsage(
-    declaration: postcss.Declaration,
+    declaration: any,
     matchedVariables: RegExpMatchArray[],
   ): void {
     const { prop } = declaration;

@@ -96,7 +96,7 @@ async function extractSelectors(
  * @param node node of postcss AST
  * @param type type of css comment
  */
-function isIgnoreAnnotation(node: postcss.Comment, type: IgnoreType): boolean {
+function isIgnoreAnnotation(node: any, type: IgnoreType): boolean {
   switch (type) {
     case "next":
       return node.text.includes(IGNORE_ANNOTATION_NEXT);
@@ -111,7 +111,7 @@ function isIgnoreAnnotation(node: postcss.Comment, type: IgnoreType): boolean {
  * Check if the node correspond to an empty css rule
  * @param node node of postcss AST
  */
-function isRuleEmpty(node?: postcss.Container): boolean {
+function isRuleEmpty(node?: any): boolean {
   if (
     (isPostCSSRule(node) && !node.selector) ||
     (node?.nodes && !node.nodes.length) ||
@@ -128,9 +128,9 @@ function isRuleEmpty(node?: postcss.Container): boolean {
  * Check if the node has a css comment indicating to ignore the current selector rule
  * @param rule rule of postcss AST
  */
-function hasIgnoreAnnotation(rule: postcss.Rule): boolean {
+function hasIgnoreAnnotation(rule: any): boolean {
   let found = false;
-  rule.walkComments((node) => {
+  rule.walkComments((node: any) => {
     if (
       node &&
       node.type === "comment" &&
@@ -170,7 +170,7 @@ function stripQuotes(str: string): string {
  * @param selectors extractor selectors
  */
 function isAttributeFound(
-  attributeNode: selectorParser.Attribute,
+  attributeNode: any,
   selectors: ExtractorResultSets,
 ): boolean {
   if (!selectors.hasAttrName(attributeNode.attribute)) {
@@ -203,7 +203,7 @@ function isAttributeFound(
  * @param selectors extractor selectors
  */
 function isClassFound(
-  classNode: selectorParser.ClassName,
+  classNode: any,
   selectors: ExtractorResultSets,
 ): boolean {
   return selectors.hasClass(classNode.value);
@@ -215,7 +215,7 @@ function isClassFound(
  * @param selectors extractor selectors
  */
 function isIdentifierFound(
-  identifierNode: selectorParser.Identifier,
+  identifierNode: any,
   selectors: ExtractorResultSets,
 ): boolean {
   return selectors.hasId(identifierNode.value);
@@ -227,7 +227,7 @@ function isIdentifierFound(
  * @param selectors extractor selectors
  */
 function isTagFound(
-  tagNode: selectorParser.Tag,
+  tagNode: any,
   selectors: ExtractorResultSets,
 ): boolean {
   return selectors.hasTag(tagNode.value);
@@ -238,7 +238,7 @@ function isTagFound(
  * (e.g. :nth-child, :nth-of-type, :only-child, :not)
  * @param selector selector
  */
-function isInPseudoClass(selector: selectorParser.Node): boolean {
+function isInPseudoClass(selector: any): boolean {
   return (
     (selector.parent &&
       selector.parent.type === "pseudo" &&
@@ -247,15 +247,15 @@ function isInPseudoClass(selector: selectorParser.Node): boolean {
   );
 }
 
-function isPostCSSAtRule(node?: postcss.Node): node is postcss.AtRule {
+function isPostCSSAtRule(node?: any): node is any {
   return node?.type === "atrule";
 }
 
-function isPostCSSRule(node?: postcss.Node): node is postcss.Rule {
+function isPostCSSRule(node?: any): node is any {
   return node?.type === "rule";
 }
 
-function isPostCSSComment(node?: postcss.Node): node is postcss.Comment {
+function isPostCSSComment(node?: any): node is any {
   return node?.type === "comment";
 }
 
@@ -273,7 +273,7 @@ class PurgeCSS {
 
   public options: Options = defaultOptions;
 
-  private collectDeclarationsData(declaration: postcss.Declaration): void {
+  private collectDeclarationsData(declaration: any): void {
     const { prop, value } = declaration;
 
     // collect css properties data
@@ -394,7 +394,7 @@ class PurgeCSS {
    * Evaluate at-rule and register it for future reference
    * @param node node of postcss AST
    */
-  private evaluateAtRule(node: postcss.AtRule): void {
+  private evaluateAtRule(node: any): void {
     // keyframes
     if (this.options.keyframes && node.name.endsWith("keyframes")) {
       this.atRules.keyframes.push(node);
@@ -419,7 +419,7 @@ class PurgeCSS {
    * @param selectors selectors used in content files
    */
   private evaluateRule(
-    node: postcss.Node,
+    node: any,
     selectors: ExtractorResultSets,
   ): void {
     // exit if is in ignoring state activated by an ignore comment
@@ -457,8 +457,8 @@ class PurgeCSS {
     }
 
     let keepSelector = true;
-    node.selector = selectorParser((selectorsParsed) => {
-      selectorsParsed.walk((selector) => {
+    node.selector = selectorParser((selectorsParsed: any) => {
+      selectorsParsed.walk((selector: any) => {
         if (selector.type !== "selector") {
           return;
         }
@@ -472,7 +472,7 @@ class PurgeCSS {
           selector.remove();
         }
       });
-    }).processSync(node.selector);
+    }).processSync(node.selector, {});
 
     // declarations
     if (keepSelector && typeof node.nodes !== "undefined") {
@@ -676,7 +676,7 @@ class PurgeCSS {
   /**
    * Transform a selector node into a string
    */
-  private getSelectorValue(selector: selectorParser.Node): string | undefined {
+  private getSelectorValue(selector: any): string | undefined {
     return (
       (selector.type === "attribute" && selector.attribute) || selector.value
     );
@@ -688,7 +688,7 @@ class PurgeCSS {
    * @param selectorsFromExtractor selectors in the css rule
    */
   private shouldKeepSelector(
-    selector: selectorParser.Selector,
+    selector: any,
     selectorsFromExtractor: ExtractorResultSets,
   ): boolean {
     // ignore the selector if it is inside a pseudo class
@@ -700,7 +700,7 @@ class PurgeCSS {
       const selectorParts = selector.nodes.map(this.getSelectorValue);
       if (
         selectorParts.some(
-          (selectorPart) =>
+          (selectorPart: any) =>
             selectorPart && this.isSelectorSafelistedGreedy(selectorPart),
         )
       ) {
@@ -781,7 +781,7 @@ class PurgeCSS {
     root: PostCSSRoot,
     selectors: ExtractorResultSets,
   ): void {
-    root.walk((node) => {
+    root.walk((node: any) => {
       if (node.type === "rule") {
         return this.evaluateRule(node, selectors);
       }
